@@ -88,6 +88,6 @@ CALCULATE([2018 Value], FILTER(ALL(Dates), Dates[Date] = PrvMth))
 VALUE = 
 VAR zeroo = SELECTEDVALUE('CurrencyTable'[ID])
 VAR truee = SUM(Some_Table[Value)
-VAR falsee = CALCULATE(SUM(Some_Table[Value]) * SUM(Some_Table[Value]), FILTER(Some_Table, RELATED(Currency_Table[Currency_1]) = Some_Table[Currency]))
+VAR falsee = CALCULATE(SUM(Some_Table[Value]) * SUM(Exchange[Rate]), FILTER(Some_Table, RELATED(Exchange[Currency_to]) = Some_Table[Currency_from]))
 RETURN
 IF(zeroo=0,truee,falsee)
