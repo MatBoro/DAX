@@ -85,10 +85,10 @@ CALCULATE([2018 Value], FILTER(ALL(Dates), Dates[Date] = PrvMth))
 
 
 .7 
-COGS = 
-VAR zeroo = SELECTEDVALUE('Currency'[ID])
-VAR truee = SUM(ICE_SKU_Source[COGS_GBP])
-VAR falsee = CALCULATE(SUM(ICE_SKU_Source[COGS_GBP]) * SUM(ICE_Exchange_rate[Exchange_rate]), FILTER(ICE_SKU_Source, RELATED(ICE_Exchange_rate[Currency_To]) = ICE_SKU_Source[Local Currency]))
+VALUE = 
+VAR zeroo = SELECTEDVALUE('CurrencyTable'[ID])
+VAR truee = SUM(Some_Table[Value)
+VAR falsee = CALCULATE(SUM(Some_Table[Value]) * SUM(Some_Table[Value]), FILTER(Some_Table, RELATED(Currency_Table[Currency_1]) = Some_Table[Currency]))
 RETURN
 IF(zeroo=0,truee,falsee)
 
