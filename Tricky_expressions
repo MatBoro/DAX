@@ -1,0 +1,96 @@
+1. 
+PrevDate = IF(ISBLANK(DATEADD(Dates[Date], -1, MONTH)), DATE(2016,12,1), DATEADD(Dates[Date], -1, MONTH))
+
+.2
+COLUMN_YTD% = 
+VAR COLUMN_YTD_2017 = 
+    VAR RollStart = STARTOFYEAR(DATEADD(LASTDATE(Dates[Date]), -2, YEAR))                 
+    VAR RollEnd = DATEADD(LASTDATE(Dates[Date]), -2, YEAR)                                
+    VAR tmpTable = ALL(Dates)                                                                
+    VAR tmpTable1 = FILTER(tmpTable, Dates[Date].[Date] >= RollStart && Dates[Date].[Date] <= RollEnd)         
+    RETURN SUMX(tmpTable1, [2017 COLUMN])                                                       
+VAR COLUMN_YTD_2018 = 
+    VAR RollStart = STARTOFYEAR(DATEADD(LASTDATE(Dates[Date]), -1, YEAR))                
+    VAR RollEnd = DATEADD(LASTDATE(Dates[Date]), -1, YEAR)                               
+    VAR tmpTable = ALL(Dates)                                                               
+    VAR tmpTable1 = FILTER(tmpTable, Dates[Date].[Date] >= RollStart && Dates[Date].[Date] <= RollEnd)         
+    RETURN SUMX(tmpTable1, [2018 COLUMN])                                                    
+RETURN 
+    COLUMN_YTD_2018 / COLUMN_YTD_2017 - 1                                                      
+
+
+.3 
+SALE YTD% 2019 = 
+VAR SALE_YTD_2018 = 
+    VAR RollStart = STARTOFYEAR(DATEADD(LASTDATE(Dates[Date]), -1, YEAR))
+    VAR RollEnd = DATEADD(LASTDATE(Dates[Date]), -1, YEAR)
+    VAR tmpTable = ALL(Dates)
+    VAR tmpTable1 = FILTER(tmpTable, Dates[Date].[Date] >= RollStart && Dates[Date].[Date] <= RollEnd)
+    RETURN SUMX(tmpTable1, [2018 SALE])
+VAR SALE_YTD_2019 = 
+    VAR RollStart = STARTOFYEAR(Dates[Date].[Date])
+    VAR RollEnd = LASTDATE(Dates[Date])
+    VAR tmpTable = ALL(Dates)
+    VAR tmpTable1 = FILTER(tmpTable, Dates[Date].[Date] >= RollStart && Dates[Date].[Date] <= RollEnd)
+    RETURN SUMX(tmpTable1, [2019 SALE])
+RETURN 
+    SALE_YTD_2019 / SALE_YTD_2018 - 1 
+   
+   
+.4
+Weeks_Value_Money (2018) = 
+VAR VAL_2018 = VAL[2018 VAL]
+VAR MonthSum = 
+    VAR RollStart = 
+            VAR PrvDate = FILTER(STARTOFMONTH(DATESINPERIOD(Dates[Date].[Date], LASTDATE(DATEADD(LASTDATE(Dates[Date]), -1, YEAR)), -1, MONTH)), 
+            (Dates[Date].[Date]) <= LASTDATE(Dates[Date].[Date]))
+            VAR Jan = DATEVALUE("01/01/2018")
+            VAR Nov = DATEVALUE("11/01/2017")
+            VAR Dec = DATEVALUE("12/01/2017")
+            RETURN 
+            SWITCH(PrvDate, Nov, Jan, Dec, Jan, PrvDate)
+    VAR RollEnd = LASTDATE(DATEADD(LASTDATE(Dates[Date]), -1, YEAR))
+    VAR tmpTable = ALL(Dates)
+    VAR tmpTable1 = FILTER(tmpTable, Dates[Date].[Date] >=RollStart && Dates[Date].[Date] <= RollEnd)
+    RETURN SUMX(tmpTable1, OTHER_TABLE[2018 OTHER_VAL])
+VAR NoWeek = CALCULATE(SUM(Dates[NoWeeks]), Dates[Year] = "2018")
+RETURN 
+CALCULATE(VAL_2018/(MonthSum/NoWeek))
+
+
+.5
+Days_Value_Cash (2019) = 
+VAR THIS_2019 = THIS[2019 THIS]
+VAR MonthSum = 
+    VAR RollStart = 
+            VAR PrvDate = FILTER(STARTOFMONTH(DATESINPERIOD(Dates[Date].[Date], LASTDATE(Dates[Date]), -2, MONTH)), 
+            (Dates[Date].[Date]) <= LASTDATE(Dates[Date].[Date]))
+            VAR Jan = DATEVALUE("01/01/2019")
+            VAR Nov = DATEVALUE("11/01/2018")
+            VAR Dec = DATEVALUE("12/01/2018")
+            RETURN 
+            SWITCH(PrvDate, Nov, Jan, Dec, Jan, PrvDate)
+    VAR RollEnd = LASTDATE(Dates[Date])
+    VAR tmpTable = ALL(Dates)
+    VAR tmpTable1 = FILTER(tmpTable, Dates[Date].[Date] >=RollStart && Dates[Date].[Date] <= RollEnd)
+    RETURN SUMX(tmpTable1, THAT[2019 THAT])
+VAR NoDays = CALCULATE(SUM(Dates[NoDays]), Dates[Year] = "2019")
+RETURN 
+CALCULATE(THIS_2019/((MonthSum/NoDays)/(365/12)))
+
+
+.6
+PrevMonth = 
+VAR PrvMth = LASTDATE(DATEADD(LASTDATE(Dates[PrevDate]), -1, YEAR))
+RETURN
+CALCULATE([2018 Value], FILTER(ALL(Dates), Dates[Date] = PrvMth))
+
+
+.7 
+COGS = 
+VAR zeroo = SELECTEDVALUE('Currency'[ID])
+VAR truee = SUM(ICE_SKU_Source[COGS_GBP])
+VAR falsee = CALCULATE(SUM(ICE_SKU_Source[COGS_GBP]) * SUM(ICE_Exchange_rate[Exchange_rate]), FILTER(ICE_SKU_Source, RELATED(ICE_Exchange_rate[Currency_To]) = ICE_SKU_Source[Local Currency]))
+RETURN
+IF(zeroo=0,truee,falsee)
+
