@@ -1,0 +1,67 @@
+Customer_1_Counter = 
+VAR _Channel =
+    FIRSTNONBLANK ( DATASET[Channel], 1 )
+VAR _highername =
+    FIRSTNONBLANK ( DATASET[higher_customer_channel], 1 )
+VAR _tableCheck =
+    FILTER (
+        ADDCOLUMNS (
+            VALUES ( DATASET[higher customer Name] ),
+            "counter",
+                CALCULATE (
+                    DISTINCTCOUNT ( DATASET[lower_customer_long] ),
+                    ALL ( DATASET[lower_customer_long] )
+                )
+        ),
+        [counter] = 1
+    )
+VAR _filterALL =
+    FILTER (
+        ADDCOLUMNS (
+            ALL ( DATASET[higher customer Name] ),
+            "counter",
+                CALCULATE (
+                    DISTINCTCOUNT ( DATASET[lower_customer_long] ),
+                    ALL ( DATASET[lower_customer_long] )
+                )
+        ),
+        [counter] = 1
+    )
+VAR _result =
+    SUMX ( _tableCheck, [counter] )
+VAR _Avg_highername =
+    CALCULATE (
+        [MEASURE $],
+        ALL (
+            DATASET[Channel],
+            DATASET[higher_customer_channel],
+            DATASET[lower_customer_long],
+            DATASET[higher customer Name],
+            DATASET[higher customer ID],
+            DATASET[lower customer Name],
+            DATASET[lower customer ID]
+        ),
+        DATASET[Channel] = _Channel,
+        DATASET[higher_customer_channel] = _highername
+    )
+VAR _Avg_1_counter =
+    CALCULATE (
+        [MEASURE $],
+        ALL (
+            DATASET[Channel],
+            DATASET[higher_customer_channel],
+            DATASET[lower_customer_long],
+            DATASET[higher customer Name],
+            DATASET[higher customer ID],
+            DATASET[lower customer Name],
+            DATASET[lower customer ID]
+        ),
+        DATASET[Channel] = _Channel,
+        _filterALL
+    )
+RETURN
+    IF (
+        _result = 1,
+        ( [MEASURE $] - _Avg_1_counter ) * [VOLUME],
+        ( [MEASURE $] - _Avg_highername ) * [VOLUME]
+    )
