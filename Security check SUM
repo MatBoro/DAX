@@ -1,0 +1,26 @@
+Security_Check_Measure :=
+VAR _country_count =
+    DISTINCTCOUNT ( DATASET[COUNTRY] )
+VAR _country =
+    MAX ( DATASET[COUNTRY] )
+VAR _rest =
+    MIN ( security_table[user_group ) IN { 0, 1, 2 }
+VAR _calc =
+    SUM ( [sample_values_sum] )
+VAR _no_ABC_result =
+    IF ( _rest, _calc, BLANK () )
+VAR _ABC_result = [SAMPLE MEASURE (ABC)]
+VAR _result =
+    SWITCH (
+        TRUE (),
+        _country_count > 1
+            && CONTAINS ( DATASET, DATASET[COUNTRY], "ABC" ), _no_ABC_result + _ABC_result,
+        _country_count > 1
+            && NOT ( CONTAINS ( DATASET, DATASET[COUNTRY], "ABC" ) ), _no_ABC_result,
+        _country_count = 1
+            && _country = "ABC", _ABC_result,
+        _country_count = 1
+            && _country <> "ABC", _no_ABC_result
+    )
+RETURN
+    _result
